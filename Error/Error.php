@@ -9,15 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class Error
 {
-    const TYPE_VALIDATION = 'validation_error';
-    const TYPE_INVALID_REQUEST_BODY_FORMAT = 'invalid_body_format';
+    const TYPE_REQUEST = 'request_error';
     const TYPE_AUTHENTICATION = 'authentication_error';
-
-    private static $messages = array(
-        self::TYPE_VALIDATION => 'There was a validation error',
-        self::TYPE_INVALID_REQUEST_BODY_FORMAT => 'Invalid JSON format sent',
-        self::TYPE_AUTHENTICATION => 'Invalid or missing authentication',
-    );
+    // message self::TYPE_AUTHENTICATION = 'Invalid or missing authentication'
 
     /**
      * @var string The error type
@@ -41,8 +35,8 @@ class Error
 
     /**
      * @param int     $statusCode The HTTP status code
-     * @param string  $type       The error type. One of ArturDoruch\SimpleRestBundle\Error\Error::Type_* constant.
-     * @param string  $message    Custom error message
+     * @param string  $type       Error type.
+     * @param string  $message    Error message.
      * @param array   $data       Error extra data.
      */
     public function __construct($statusCode, $type = null, $message = null, array $data = [])
@@ -56,7 +50,7 @@ class Error
             $this->type = 'about:blank';
             $this->message = isset(Response::$statusTexts[$statusCode]) ? Response::$statusTexts[$statusCode] : '';
         } else {
-            $this->message = $message ?: (isset(self::$messages[$type]) ? self::$messages[$type] : '');
+            $this->message = $message;
         }
     }
 
@@ -85,10 +79,10 @@ class Error
     }
 
     /**
-     * Adds extra error data.
+     * Adds error extra data.
      *
      * @param string $name
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function addData($name, $value)
     {
@@ -108,11 +102,11 @@ class Error
      */
     public function toArray()
     {
-        return array_merge($this->data, [
+        return array_merge([
                 'code' => $this->statusCode,
                 'type' => $this->type,
                 'message' => $this->message,
-            ]);
+            ], $this->data);
     }
 }
  

@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
- * The class created based on information from course https://knpuniversity.com/screencast/symfony-rest2.
+ * @author Artur Doruch <arturdoruch@interia.pl>
  */
 class ExceptionListener
 {
@@ -72,12 +72,11 @@ class ExceptionListener
             // that the exception message is safe for the client. Otherwise, it could be
             // some sensitive low-level exception, which should NOT be exposed.
             if ($exception instanceof HttpException) {
-                $error->addData('detail', $exception->getMessage());
+                $error->addData('details', [$exception->getMessage()]);
             }
         }
 
         $response = new ErrorResponse($error);
-        // Send the modified response object to the event
         $event->setResponse($response);
     }
 

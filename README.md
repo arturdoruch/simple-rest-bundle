@@ -1,1 +1,1 @@
-# Simple REST Bundle
+# Simple Rest Bundle

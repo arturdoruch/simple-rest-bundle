@@ -59,14 +59,15 @@ abstract class AbstractRestController extends Controller
 
     /**
      * @param int    $statusCode
-     * @param string $type The error type. One of ArturDoruch\SimpleRestBundle\Error\Error::Type_* constant.
-     * @param string $message The error custom message.
+     * @param string $type
+     * @param string $message
+     * @param array  $data
      *
      * @return ErrorException
      */
-    protected function createErrorException($statusCode = 400, $type = null, $message = null)
+    protected function createErrorException($statusCode = 400, $type = null, $message = null, array $data = [])
     {
-        return ErrorException::create($statusCode, $type, $message);
+        return ErrorException::create($statusCode, $type, $message, $data);
     }
 
     /**
@@ -76,11 +77,9 @@ abstract class AbstractRestController extends Controller
      */
     protected function createFormValidationErrorException(FormInterface $form)
     {
-        $error = new Error(400, Error::TYPE_VALIDATION, null, [
-                'errors' => $this->getFormErrors($form)
+        return ErrorException::create(400, Error::TYPE_REQUEST, 'Invalid request parameters', [
+                'details' => $this->getFormErrors($form)
             ]);
-
-        return new ErrorException($error);
     }
 
     /**
@@ -109,7 +108,7 @@ abstract class AbstractRestController extends Controller
             $data = json_decode($request->getContent(), true);
 
             if ($data === null) {
-                throw $this->createErrorException(400, Error::TYPE_INVALID_REQUEST_BODY_FORMAT);
+                throw $this->createErrorException(400, Error::TYPE_REQUEST, 'Invalid JSON format sent');
             }
         }
 
@@ -120,17 +119,16 @@ abstract class AbstractRestController extends Controller
      * @param FormInterface $form
      * @return array
      */
-    private function getFormErrors(FormInterface $form)
+    protected function getFormErrors(FormInterface $form)
     {
         $errors = array();
 
         foreach ($form->getErrors() as $error) {
-            //$message = $error->getMessage();
             $message = $this->getErrorMessage($error);
             $extraData = $form->getExtraData();
 
             if (!empty($extraData)) {
-                $message .= ' Submitted extra fields: \'' . join('\', \'', array_keys($extraData)) . '\'.';
+                $message .= sprintf(' Submitted extra fields: "%s".', join('", "', array_keys($extraData)));
             }
 
             $errors[] = $message;
