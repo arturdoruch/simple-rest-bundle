@@ -121,7 +121,7 @@ abstract class AbstractRestController extends Controller
      */
     protected function getFormErrors(FormInterface $form)
     {
-        $errors = array();
+        $errors = [];
 
         foreach ($form->getErrors() as $error) {
             $message = $this->getErrorMessage($error);
