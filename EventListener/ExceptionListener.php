@@ -21,7 +21,7 @@ class ExceptionListener
     /**
      * @var array
      */
-    private $apiPaths;
+    private $restPaths;
 
     /**
      * @var KernelInterface
@@ -35,20 +35,19 @@ class ExceptionListener
 
     /**
      * @param KernelInterface $kernel
-     * @param array $apiPaths
+     * @param array $restPaths
      * @param EventDispatcherInterface $dispatcher
      */
-    public function __construct(array $apiPaths, KernelInterface $kernel, EventDispatcherInterface $dispatcher)
+    public function __construct(array $restPaths, KernelInterface $kernel, EventDispatcherInterface $dispatcher)
     {
-        $this->apiPaths = $apiPaths;
+        $this->restPaths = $restPaths;
         $this->kernel = $kernel;
         $this->dispatcher = $dispatcher;
     }
 
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
-        // Act only on api paths.
-        if (!$this->isRequestedApiPath($event->getRequest())) {
+        if (!$this->isRestPath($event->getRequest())) {
             return;
         }
 
@@ -57,23 +56,33 @@ class ExceptionListener
 
         $exception = $event->getException();
         $statusCode = $this->getStatusCode($exception);
+        $debugEnvironment = in_array($this->kernel->getEnvironment(), ['dev', 'test']);
 
-        // Allow to throw errors with code 500 in debug mode
-        if ($statusCode == 500 && in_array($this->kernel->getEnvironment(), array('dev', 'test'))) {
+        // Throw errors with code 500 in debug mode
+        if ($statusCode === 500 && $debugEnvironment) {
+            /*if ($exception instanceof FatalThrowableError) {
+                $exception = FlattenException::create($exception, $statusCode);
+            }*/
+
             return;
         }
 
         if ($exception instanceof ErrorException) {
             $error = $exception->getError();
         } else {
-            $error = new Error($statusCode);
-
+            $message = '';
+            $type = null;
             // If it's an HttpException message (e.g. for 404, 403), we'll say as a rule
             // that the exception message is safe for the client. Otherwise, it could be
             // some sensitive low-level exception, which should NOT be exposed.
             if ($exception instanceof HttpException) {
-                $error->addData('details', [$exception->getMessage()]);
+                if ($debugEnvironment) {
+                    $message = $exception->getMessage();
+                }
+                $type = Error::TYPE_REQUEST;
             }
+
+            $error = new Error($statusCode, $type, $message);
         }
 
         $response = new ErrorResponse($error);
@@ -94,12 +103,12 @@ class ExceptionListener
      *
      * @return bool
      */
-    private function isRequestedApiPath(Request $request)
+    private function isRestPath(Request $request)
     {
         $requestPath = $request->getPathInfo();
 
-        foreach ($this->apiPaths as $apiPath) {
-            if (strpos($requestPath, $apiPath) === 0) {
+        foreach ($this->restPaths as $restPath) {
+            if (preg_match('~'.$restPath.'~', $requestPath)) {
                 return true;
             }
         }
