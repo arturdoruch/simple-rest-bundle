@@ -19,7 +19,25 @@ use Symfony\Component\HttpFoundation\Response;
 abstract class AbstractRestController extends Controller
 {
     /**
-     * Serializes data into json format.
+     * @param mixed $data
+     * @param int $statusCode
+     * @param array $headers
+     *
+     * @return Response
+     */
+    protected function createResponse($data = '', $statusCode = 200, array $headers = [])
+    {
+        if (!is_string($data)) {
+            $data = $this->serialize($data);
+        }
+
+        $headers = array_merge(['Content-Type' => 'application/json'], $headers);
+
+        return new Response($data, $statusCode, $headers);
+    }
+
+    /**
+     * Serializes data into JSON format.
      *
      * @param mixed $data
      * @param SerializationContext $context
@@ -33,28 +51,6 @@ abstract class AbstractRestController extends Controller
         $context->enableMaxDepthChecks();
 
         return $this->get('jms_serializer')->serialize($data, 'json', $context);
-    }
-
-    /**
-     * @param mixed $data
-     * @param int   $statusCode
-     * @param array $headers
-     *
-     * @return Response
-     */
-    protected function createResponse($data = '', $statusCode = 200, array $headers = [])
-    {
-        if (!is_string($data)) {
-            $data = $this->serialize($data);
-        }
-
-        $headers = array_merge(['Content-Type' => 'application/json'], $headers);
-
-        $response = new Response($data, $statusCode, $headers);
-        $response->setMaxAge(600);
-        $response->setPublic();
-
-        return $response;
     }
 
     /**
@@ -77,9 +73,9 @@ abstract class AbstractRestController extends Controller
      */
     protected function createFormValidationErrorException(FormInterface $form)
     {
-        return ErrorException::create(400, Error::TYPE_REQUEST, 'Invalid request parameters', [
-                'details' => $this->getFormErrors($form)
-            ]);
+        return ErrorException::create(400, Error::TYPE_REQUEST, 'Invalid request parameters.', [
+            'details' => $this->getFormErrors($form)
+        ]);
     }
 
     /**
@@ -95,24 +91,49 @@ abstract class AbstractRestController extends Controller
     }
 
     /**
-     * @todo Gets request data from request or content based on request content type: application/json or application/x-www-form-urlencoded.
-     *
      * @param Request $request
+     *
      * @return array
      */
     protected function getRequestData(Request $request)
     {
-        $data = $request->request->all();
+        $contentType = $request->headers->get('Content-Type');
 
-        if (empty($data) && $request->getContent()) {
-            $data = json_decode($request->getContent(), true);
+        if (preg_match('/^application\/.*json/', $contentType)) {
+            return $this->getRequestJsonData($request);
+        }
 
-            if ($data === null) {
-                throw $this->createErrorException(400, Error::TYPE_REQUEST, 'Invalid JSON format sent');
-            }
+        return $this->getRequestRequestData($request);
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return mixed
+     */
+    protected function getRequestJsonData(Request $request)
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if ($data === null) {
+            $message = (!$request->getContent() ? 'Missing' : 'Invalid') . ' request JSON body.';
+
+            throw $this->createErrorException(400, Error::TYPE_REQUEST, $message);
         }
 
         return $data;
+    }
+
+    /**
+     * Gets request POST, PUT, PATCH body parameters.
+     *
+     * @param Request $request
+     *
+     * @return array
+     */
+    protected function getRequestRequestData(Request $request)
+    {
+        return $request->request->all();
     }
 
     /**
@@ -157,34 +178,4 @@ abstract class AbstractRestController extends Controller
 
         return $this->get('translator')->trans($error->getMessageTemplate(), $error->getMessageParameters(), 'validators');
     }
-
-    /*
-     * This code has been taken from JMSSerializer.
-     */
-    /*protected function _getFormErrors(FormInterface $data)
-    {
-        $form = $errors = array();
-
-        foreach ($data->getErrors() as $error) {
-            $errors[] = $this->getErrorMessage($error);
-        }
-
-        if ($errors) {
-            $form['errors'] = $errors;
-        }
-
-        $children = array();
-
-        foreach ($data->all() as $child) {
-            if ($child instanceof FormInterface) {
-                $children[$child->getName()] = $this->getFormErrors($child);
-            }
-        }
-
-        if ($children) {
-            $form['children'] = $children;
-        }
-
-        return $form;
-    }*/
 }
