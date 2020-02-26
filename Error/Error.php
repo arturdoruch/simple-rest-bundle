@@ -48,10 +48,9 @@ class Error
         if ($type === null) {
             // The default type is about:blank and the message should be the standard status code message
             $this->type = 'about:blank';
-            $this->message = isset(Response::$statusTexts[$statusCode]) ? Response::$statusTexts[$statusCode] : '';
-        } else {
-            $this->message = $message;
         }
+
+        $this->message = $message ?: (isset(Response::$statusTexts[$statusCode]) ? Response::$statusTexts[$statusCode] : '');
     }
 
     /**
@@ -103,10 +102,10 @@ class Error
     public function toArray()
     {
         return array_merge([
-                'code' => $this->statusCode,
-                'type' => $this->type,
-                'message' => $this->message,
-            ], $this->data);
+            'code' => $this->statusCode,
+            'type' => $this->type,
+            'message' => $this->message,
+        ], $this->data);
     }
 }
  
