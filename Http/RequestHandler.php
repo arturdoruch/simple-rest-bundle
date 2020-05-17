@@ -2,7 +2,7 @@
 
 namespace ArturDoruch\SimpleRestBundle\Http;
 
-use ArturDoruch\SimpleRestBundle\Exception\HttpException;
+use ArturDoruch\SimpleRestBundle\Http\Exception\HttpException;
 use ArturDoruch\SimpleRestBundle\FormErrorHelper;
 use ArturDoruch\SimpleRestBundle\HttpUtils;
 use Symfony\Component\Form\FormInterface;

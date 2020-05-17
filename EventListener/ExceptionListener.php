@@ -3,7 +3,8 @@
 namespace ArturDoruch\SimpleRestBundle\EventListener;
 
 use ArturDoruch\SimpleRestBundle\Api\ApiProblem;
-use ArturDoruch\SimpleRestBundle\ExceptionEvents;
+use ArturDoruch\SimpleRestBundle\Event\RequestErrorEvent;
+use ArturDoruch\SimpleRestBundle\Http\RequestErrorEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -44,16 +45,22 @@ class ExceptionListener
         $this->dispatcher = $dispatcher;
     }
 
+    /**
+     * Prepares HTTP response based on exception properties.
+     *
+     * @param GetResponseForExceptionEvent $event
+     */
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
         if (!$this->isApiPath($event->getRequest())) {
             return;
         }
 
-        // Call listeners to modify current event.
-        $this->dispatcher->dispatch(ExceptionEvents::KERNEL_EXCEPTION, $event);
-
         $exception = $event->getException();
+
+        $requestErrorEvent = new RequestErrorEvent($exception, $event->getRequest());
+        $this->dispatcher->dispatch(RequestErrorEvents::PRE_CREATE_RESPONSE, $requestErrorEvent);
+
         $statusCode = (int) $this->getStatusCode($exception);
         $debugEnvironment = in_array($this->kernel->getEnvironment(), ['dev', 'test']);
 
@@ -71,7 +78,7 @@ class ExceptionListener
         $details = [];
         $headers = [];
 
-        if ($exception instanceof \ArturDoruch\SimpleRestBundle\Exception\HttpExceptionInterface) {
+        if ($exception instanceof \ArturDoruch\SimpleRestBundle\Http\Exception\HttpExceptionInterface) {
             $type = $exception->getType() ?? ApiProblem::TYPE_REQUEST;
             $message = $exception->getMessage();
             $details = $exception->getDetails();
@@ -92,6 +99,9 @@ class ExceptionListener
         $response = new JsonResponse($apiProblem->toArray(), $statusCode, $headers);
 
         $event->setResponse($response);
+
+        $requestErrorEvent->setResponse(clone $response);
+        $this->dispatcher->dispatch(RequestErrorEvents::POST_CREATE_RESPONSE, $requestErrorEvent);
     }
 
 

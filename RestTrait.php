@@ -2,7 +2,7 @@
 
 namespace ArturDoruch\SimpleRestBundle;
 
-use ArturDoruch\SimpleRestBundle\Exception\HttpException;
+use ArturDoruch\SimpleRestBundle\Http\Exception\HttpException;
 use ArturDoruch\SimpleRestBundle\Http\RequestHandler;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\Form\FormInterface;

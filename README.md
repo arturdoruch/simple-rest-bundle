@@ -84,9 +84,7 @@ class ProductController extends Controller
 }    
 ```
 
-### Handling exceptions
-
-`ArturDoruch\SimpleRestBundle\ExceptionEvents::KERNEL_EXCEPTION`
+### Request error events
 
 todo     
 

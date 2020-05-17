@@ -1,6 +1,6 @@
 <?php
 
-namespace ArturDoruch\SimpleRestBundle\Exception;
+namespace ArturDoruch\SimpleRestBundle\Http\Exception;
 
 /**
  * @author Artur Doruch <arturdoruch@interia.pl>
