@@ -2,15 +2,14 @@
 
 namespace ArturDoruch\SimpleRestBundle\EventListener;
 
-use ArturDoruch\SimpleRestBundle\Error\Error;
-use ArturDoruch\SimpleRestBundle\Error\ErrorException;
-use ArturDoruch\SimpleRestBundle\Error\ErrorResponse;
-use ArturDoruch\SimpleRestBundle\Events;
+use ArturDoruch\SimpleRestBundle\Api\ApiProblem;
+use ArturDoruch\SimpleRestBundle\ExceptionEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
-use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
@@ -21,7 +20,7 @@ class ExceptionListener
     /**
      * @var array
      */
-    private $restPaths;
+    private $apiPaths;
 
     /**
      * @var KernelInterface
@@ -35,27 +34,27 @@ class ExceptionListener
 
     /**
      * @param KernelInterface $kernel
-     * @param array $restPaths
+     * @param array $apiPaths
      * @param EventDispatcherInterface $dispatcher
      */
-    public function __construct(array $restPaths, KernelInterface $kernel, EventDispatcherInterface $dispatcher)
+    public function __construct(array $apiPaths, KernelInterface $kernel, EventDispatcherInterface $dispatcher)
     {
-        $this->restPaths = $restPaths;
+        $this->apiPaths = $apiPaths;
         $this->kernel = $kernel;
         $this->dispatcher = $dispatcher;
     }
 
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
-        if (!$this->isRestPath($event->getRequest())) {
+        if (!$this->isApiPath($event->getRequest())) {
             return;
         }
 
         // Call listeners to modify current event.
-        $this->dispatcher->dispatch(Events::KERNEL_EXCEPTION, $event);
+        $this->dispatcher->dispatch(ExceptionEvents::KERNEL_EXCEPTION, $event);
 
         $exception = $event->getException();
-        $statusCode = $this->getStatusCode($exception);
+        $statusCode = (int) $this->getStatusCode($exception);
         $debugEnvironment = in_array($this->kernel->getEnvironment(), ['dev', 'test']);
 
         // Throw errors with code 500 in debug mode
@@ -67,47 +66,47 @@ class ExceptionListener
             return;
         }
 
-        if ($exception instanceof ErrorException) {
-            $error = $exception->getError();
-        } else {
-            $message = '';
-            $type = null;
+        $type = null;
+        $message = '';
+        $details = [];
+        $headers = [];
+
+        if ($exception instanceof \ArturDoruch\SimpleRestBundle\Exception\HttpExceptionInterface) {
+            $type = $exception->getType() ?? ApiProblem::TYPE_REQUEST;
+            $message = $exception->getMessage();
+            $details = $exception->getDetails();
+        } elseif ($exception instanceof HttpExceptionInterface) {
             // If it's an HttpException message (e.g. for 404, 403), we'll say as a rule
             // that the exception message is safe for the client. Otherwise, it could be
             // some sensitive low-level exception, which should NOT be exposed.
-            if ($exception instanceof HttpException) {
-                if ($debugEnvironment) {
-                    $message = $exception->getMessage();
-                }
-                $type = Error::TYPE_REQUEST;
+            if ($debugEnvironment) {
+                $message = $exception->getMessage();
             }
-
-            $error = new Error($statusCode, $type, $message);
+            $type = ApiProblem::TYPE_REQUEST;
+            $headers = $exception->getHeaders();
         }
 
-        $response = new ErrorResponse($error);
+        $apiProblem = new ApiProblem($statusCode, $type, $message, $details);
+
+        $headers['Content-Type'] = 'application/json'; // 'application/problem+json'
+        $response = new JsonResponse($apiProblem->toArray(), $statusCode, $headers);
+
         $event->setResponse($response);
     }
+
 
     private function getStatusCode(\Exception $exception)
     {
         return method_exists($exception, 'getStatusCode')
-            ? $exception->getStatusCode()
-            : Response::HTTP_INTERNAL_SERVER_ERROR;
+            ? $exception->getStatusCode() : Response::HTTP_INTERNAL_SERVER_ERROR;
     }
 
-    /**
-     * @todo Maybe move to RequestHelper class.
-     *
-     * @param Request $request
-     *
-     * @return bool
-     */
-    private function isRestPath(Request $request)
+
+    private function isApiPath(Request $request): bool
     {
         $requestPath = $request->getPathInfo();
 
-        foreach ($this->restPaths as $restPath) {
+        foreach ($this->apiPaths as $restPath) {
             if (preg_match('~'.$restPath.'~', $requestPath)) {
                 return true;
             }

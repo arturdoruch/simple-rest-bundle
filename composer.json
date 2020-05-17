@@ -1,9 +1,9 @@
 {
     "name": "arturdoruch/simple-rest-bundle",
     "type": "library",
-    "description": "Collection of useful methods for build RESTful API's",
+    "description": "Collection of useful functions for build RESTful API",
     "license": "MIT",
-    "keywords": ["rest", "symfony"],
+    "keywords": ["api", "rest", "symfony"],
     "authors": [
         {
             "name": "Artur Doruch",
@@ -11,8 +11,9 @@
         }
     ],
     "require": {
-        "symfony/framework-bundle": ">=2.6||^3.0",
-        "jms/serializer-bundle": "^1.3"
+        "php": ">=7.0",
+        "symfony/framework-bundle": "^3.0",
+        "jms/serializer-bundle": "^3.5"
     },
     "autoload": {
         "psr-4" : {

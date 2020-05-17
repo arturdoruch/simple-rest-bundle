@@ -5,13 +5,13 @@ namespace ArturDoruch\SimpleRestBundle;
 /**
  * @author Artur Doruch <arturdoruch@interia.pl>
  */
-class Events
+class ExceptionEvents
 {
     /**
-     * Events occurs when api endpoint has been requested and exception was thrown.
+     * The event is dispatched when API endpoint has been requested and exception was thrown.
      *
      * @Event("Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent").
      */
-    const KERNEL_EXCEPTION = 'ad.simple_rest.kernel_exception';
+    const KERNEL_EXCEPTION = 'arturdoruch.simple_rest.kernel_exception';
 }
  

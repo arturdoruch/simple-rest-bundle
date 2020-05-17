@@ -1,6 +1,6 @@
 services:
     arturdoruch_simple_rest.exception_listener:
         class: ArturDoruch\SimpleRestBundle\EventListener\ExceptionListener
-        arguments: ["%arturdoruch.simple_rest.rest_paths%", "@kernel", "@event_dispatcher"]
+        arguments: ['%arturdoruch_simple_rest.api_paths%', '@kernel', '@event_dispatcher']
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }

@@ -23,6 +23,7 @@ class ArturDoruchSimpleRestExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
-        $container->setParameter('arturdoruch.simple_rest.rest_paths', $config['api_paths']);
+        $container->setParameter('arturdoruch_simple_rest.api_paths', $config['api_paths']);
+        $container->setParameter('arturdoruch_simple_rest.form_error_flatten_messages', $config['form_error_flatten_messages']);
     }
 }

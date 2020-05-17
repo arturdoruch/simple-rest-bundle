@@ -10,9 +10,6 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
@@ -23,6 +20,10 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('api_paths')
                     ->isRequired()
                     ->prototype('scalar')->end()
+                ->end()
+                ->booleanNode('form_error_flatten_messages')
+                    ->info('Whether to flatten error messages multidimensional array into simple array with key-value pairs.')
+                    ->defaultFalse()
                 ->end()
             ->end();
 
