@@ -3,6 +3,7 @@
 namespace ArturDoruch\SimpleRestBundle\EventListener;
 
 use ArturDoruch\SimpleRestBundle\Api\ApiProblem;
+use ArturDoruch\SimpleRestBundle\Api\ApiProblemTypes;
 use ArturDoruch\SimpleRestBundle\Event\RequestErrorEvent;
 use ArturDoruch\SimpleRestBundle\Http\RequestErrorEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -10,7 +11,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
@@ -79,7 +82,7 @@ class ExceptionListener
         $headers = [];
 
         if ($exception instanceof \ArturDoruch\SimpleRestBundle\Http\Exception\HttpExceptionInterface) {
-            $type = $exception->getType() ?? ApiProblem::TYPE_REQUEST;
+            $type = $exception->getType() ?? ApiProblemTypes::REQUEST;
             $message = $exception->getMessage();
             $details = $exception->getDetails();
         } elseif ($exception instanceof HttpExceptionInterface) {
@@ -89,7 +92,15 @@ class ExceptionListener
             if ($debugEnvironment) {
                 $message = $exception->getMessage();
             }
-            $type = ApiProblem::TYPE_REQUEST;
+
+            if ($exception instanceof AccessDeniedHttpException) {
+                $type = ApiProblemTypes::AUTHORIZATION;
+            } elseif ($exception instanceof UnauthorizedHttpException) {
+                $type = ApiProblemTypes::AUTHENTICATION;
+            } else {
+                $type = ApiProblemTypes::REQUEST;
+            }
+
             $headers = $exception->getHeaders();
         }
 

@@ -9,8 +9,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ApiProblem implements ApiProblemInterface
 {
-    const TYPE_REQUEST = 'request_error';
-
     /**
      * @var int The HTTP status code.
      */
