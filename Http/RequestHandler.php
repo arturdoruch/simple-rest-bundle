@@ -65,7 +65,7 @@ class RequestHandler
         try {
             self::validateContentType($request, 'json');
 
-            return HttpUtils::getRequestJsonData($request);
+            return HttpUtils::getRequestJsonData($request, true);
         } catch (\InvalidArgumentException $e) {
             throw new HttpException($e->getMessage());
         }

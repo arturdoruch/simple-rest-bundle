@@ -33,13 +33,18 @@ class HttpUtils
 
     /**
      * @param Request $request
+     * @param bool $throwExceptionWhenMissing
      *
      * @return array|null Decoded request JSON content.
      * @throws \InvalidArgumentException when request JSON body is invalid.
      */
-    public static function getRequestJsonData(Request $request): ?array
+    public static function getRequestJsonData(Request $request, bool $throwExceptionWhenMissing = false): ?array
     {
         if (!$content = $request->getContent()) {
+            if ($throwExceptionWhenMissing) {
+                throw new \InvalidArgumentException('Missing request JSON body.');
+            }
+
             return null;
         }
 
