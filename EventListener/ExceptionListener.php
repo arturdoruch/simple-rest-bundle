@@ -80,7 +80,7 @@ class ExceptionListener
             $message = $exception->getMessage();
             $details = $exception->getDetails();
         } elseif ($exception instanceof HttpExceptionInterface) {
-            if ($this->kernelDebug) {
+            if ($statusCode < 500) {
                 $message = $exception->getMessage();
             }
 
@@ -118,8 +118,8 @@ class ExceptionListener
     {
         $requestPath = $request->getPathInfo();
 
-        foreach ($this->apiPaths as $restPath) {
-            if (preg_match('~'.$restPath.'~', $requestPath)) {
+        foreach ($this->apiPaths as $apiPath) {
+            if (preg_match('~'.$apiPath.'~', $requestPath)) {
                 return true;
             }
         }
