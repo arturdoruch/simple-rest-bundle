@@ -14,7 +14,6 @@ use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * @author Artur Doruch <arturdoruch@interia.pl>
@@ -27,25 +26,21 @@ class ExceptionListener
     private $apiPaths;
 
     /**
-     * @var KernelInterface
-     */
-    private $kernel;
-
-    /**
      * @var EventDispatcherInterface
      */
     private $dispatcher;
 
     /**
-     * @param KernelInterface $kernel
-     * @param array $apiPaths
-     * @param EventDispatcherInterface $dispatcher
+     * @var bool
      */
-    public function __construct(array $apiPaths, KernelInterface $kernel, EventDispatcherInterface $dispatcher)
+    private $kernelDebug;
+
+
+    public function __construct(array $apiPaths, EventDispatcherInterface $dispatcher, bool $kernelDebug)
     {
         $this->apiPaths = $apiPaths;
-        $this->kernel = $kernel;
         $this->dispatcher = $dispatcher;
+        $this->kernelDebug = $kernelDebug;
     }
 
     /**
@@ -65,10 +60,9 @@ class ExceptionListener
         $this->dispatcher->dispatch(RequestErrorEvents::PRE_CREATE_RESPONSE, $requestErrorEvent);
 
         $statusCode = (int) $this->getStatusCode($exception);
-        $debugEnvironment = in_array($this->kernel->getEnvironment(), ['dev', 'test']);
 
         // Throw errors with code 500 in debug mode
-        if ($statusCode === 500 && $debugEnvironment) {
+        if ($statusCode === 500 && $this->kernelDebug) {
             /*if ($exception instanceof FatalThrowableError) {
                 $exception = FlattenException::create($exception, $statusCode);
             }*/
@@ -86,10 +80,7 @@ class ExceptionListener
             $message = $exception->getMessage();
             $details = $exception->getDetails();
         } elseif ($exception instanceof HttpExceptionInterface) {
-            // If it's an HttpException message (e.g. for 404, 403), we'll say as a rule
-            // that the exception message is safe for the client. Otherwise, it could be
-            // some sensitive low-level exception, which should NOT be exposed.
-            if ($debugEnvironment) {
+            if ($this->kernelDebug) {
                 $message = $exception->getMessage();
             }
 
