@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="arturdoruch_simple_rest.exception_listener" class="ArturDoruch\SimpleRestBundle\EventListener\ExceptionListener" public="false">
+            <argument>%arturdoruch_simple_rest.api_paths%</argument>
+            <argument type="service" id="@event_dispatcher" />
+            <argument>%kernel.debug%</argument>
+            <tag name="kernel.event_listener" event="kernel.exception" method="onKernelException" />
+        </service>
+    </services>
+</container>
