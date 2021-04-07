@@ -12,12 +12,20 @@
     ],
     "require": {
         "php": ">=7.0",
-        "symfony/framework-bundle": "^3.0",
-        "jms/serializer-bundle": "^3.5"
+        "jms/serializer-bundle": "^3.5",
+        "symfony/config": "^3.0",
+        "symfony/dependency-injection": "^3.0",
+        "symfony/event-dispatcher": "^3.0",
+        "symfony/form": "^3.0",
+        "symfony/http-foundation": "^3.0",
+        "symfony/http-kernel": "^3.0"
+    },
+    "suggest": {
+        "symfony/translation": "For translating API error messages."
     },
     "autoload": {
-        "psr-4" : {
-            "ArturDoruch\\SimpleRestBundle\\" : ""
+        "psr-4": {
+            "ArturDoruch\\SimpleRestBundle\\": ""
         }
     }
 }
