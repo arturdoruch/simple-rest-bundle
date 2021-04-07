@@ -27,7 +27,7 @@ trait RestTrait
      * @return mixed The form data.
      * @throws HttpException when submitted form is not valid, request contains invalid parameters.
      */
-    protected function handleRequest(Request $request, FormInterface $form, $expectedJsonRequest = false)
+    protected function handleRequest(Request $request, FormInterface $form, bool $expectedJsonRequest = false)
     {
         return RequestHandler::handle($request, $form, $expectedJsonRequest);
     }

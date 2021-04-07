@@ -31,7 +31,7 @@ class RequestHandler
      * @return mixed The form data.
      * @throws HttpException when submitted form is not valid, request contains invalid parameters.
      */
-    public static function handle(Request $request, FormInterface $form, $expectedJsonRequest = false/*, $validateParameters = true*/)
+    public static function handle(Request $request, FormInterface $form, bool $expectedJsonRequest = false/*, $validateParameters = true*/)
     {
         static $isPostMethod = ['POST', 'PUT', 'PATCH'];
         $requestMethod = $request->getMethod();

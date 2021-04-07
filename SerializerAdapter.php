@@ -42,7 +42,7 @@ class SerializerAdapter
      *
      * @return string
      */
-    public static function serialize($data, SerializationContext $context = null, $format = 'json'): string
+    public static function serialize($data, SerializationContext $context = null, string $format = 'json'): string
     {
         if (!$context) {
             $context = self::createSerializationContext();
