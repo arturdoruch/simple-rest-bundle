@@ -1,4 +1,4 @@
-# Simple Rest Bundle
+# SimpleRestBundle
 
 Symfony bundle with collection of useful functions for build RESTful API.
 
@@ -36,7 +36,7 @@ artur_doruch_simple_rest:
 
 ### Controller
 
-In your controller import `ArturDoruch\SimpleRestBundle\RestTrait` class
+In your controller import the `ArturDoruch\SimpleRestBundle\RestTrait` trait
  to have access to common REST functions.
   
 Examples of handling API requests.
@@ -47,9 +47,9 @@ Examples of handling API requests.
 namespace AppBundle\Controller;
 
 use ArturDoruch\SimpleRestBundle\RestTrait;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Route;
 
 class ProductController extends Controller
 {
@@ -59,7 +59,7 @@ class ProductController extends Controller
      * Adds a new product.
      *
      * @Route(
-     *     "/product",
+     *     "/products",
      *     methods={"POST"},
      *     defaults={"_format": "json"}
      * )
@@ -69,17 +69,18 @@ class ProductController extends Controller
         // Create the form.
         $form = $this->createForm(FormType::class);
         
-        // Processes request with the form.
+        // Process request with the form.
         $this->handleRequest($request, $form, true);
 
         $object = $form->getData();       
 
-        // Makes actions with the object. E.g. save into database.
+        // Make actions with the object. E.g. save into database.
 
         // Convert object into an array.
         $data = $this->normalize($object);        
                
-        // Return response with "application/json" content type.        
+        // Create and return the response.
+        // If the "Content-Type" header is not specified then will be set to "application/json".     
         return $this->createResponse($data, 201, [
             'Location' => $this->generateUrl('app_product_get', ['id' => $object->getId()])
         ]);
@@ -93,13 +94,15 @@ todo
 
 ## Endpoint response
 
-Endpoint response body content type is always "application/json".
+The content type of the endpoint response body is always `application/json`.
 
-#### Error response
+#### Endpoint request error
 
-  - Content type: "application/json"
+The response body for an endpoint request error contains:
+
+  - Content type: `application/json`
   - Content body parameters:
-     - status: (string) HTTP status code.
-     - type: (string)
-     - message: (string)
-     - details: (array)
+     - `status` (string) HTTP status code.
+     - `type` (string) Type of the error.
+     - `message` (string) Error mesage.
+     - `details` (array) Error datials.
