@@ -4,13 +4,16 @@ Symfony bundle with collection of useful functions for build RESTful API.
 
 ## Installation
 
- - Install with command `composer require arturdoruch/simple-rest-bundle`
- - Register this bundle and `jms/serializer-bundle`  in `AppKernel` class
+```sh
+composer require arturdoruch/simple-rest-bundle
+```
+
+Register this and the `jms/serializer-bundle` in `Kernel` class of your application.
  
-    ```
-    new ArturDoruch\SimpleRestBundle\ArturDoruchSimpleRestBundle(),
-    new JMS\SerializerBundle\JMSSerializerBundle(),
-    ```
+```php
+new ArturDoruch\SimpleRestBundle\ArturDoruchSimpleRestBundle(),
+new JMS\SerializerBundle\JMSSerializerBundle(),
+```
 
 ## Configuration
 
