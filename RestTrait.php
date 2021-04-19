@@ -45,7 +45,7 @@ trait RestTrait
 
     /**
      * Creates HTTP response.
-     * As default response has header "Content-Type: application/json".
+     * By default, the response has the "Content-Type: application/json" header set.
      *
      * @param mixed $data
      * @param int $statusCode

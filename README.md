@@ -8,12 +8,16 @@ Symfony bundle with collection of useful functions for build RESTful API.
 composer require arturdoruch/simple-rest-bundle
 ```
 
-Register this and the `jms/serializer-bundle` in `Kernel` class of your application.
+Register bundle in `Kernel` class of your application.
  
 ```php
 new ArturDoruch\SimpleRestBundle\ArturDoruchSimpleRestBundle(),
-new JMS\SerializerBundle\JMSSerializerBundle(),
 ```
+
+### Suggestions
+
+ - For serializing and normalizing HTTP response data install the `jms/serializer-bundle` package.
+ - For translating API error messages install the `symfony/translation` package.
 
 ## Configuration
 
@@ -90,11 +94,44 @@ class ProductController extends Controller
 
 ### Request error events
 
-todo     
+The event names are defined in `ArturDoruch\SimpleRestBundle\Http\RequestErrorEvents` class.
+Available events:
+
+1. **Name** `artur_doruch_simple_rest.request_error.pre_create_response`
+   <br> 
+   **Class constant** `ArturDoruch\SimpleRestBundle\Http\RequestErrorEvents::PRE_CREATE_RESPONSE`
+   <br>
+   **Event class passed to the listener method** `ArturDoruch\SimpleRestBundle\Event\RequestErrorEvent`
+
+   The event is dispatched before creating the HTTP response, while API endpoint has been requested and an exception occurred.
+   **Allows to modify an exception.**
+   
+1. **Name** `artur_doruch_simple_rest.request_error.post_create_response`
+   <br> 
+   **Class constant** `ArturDoruch\SimpleRestBundle\Http\RequestErrorEvents::POST_CREATE_RESPONSE`
+   <br>
+   **Event class passed to the listener method** `ArturDoruch\SimpleRestBundle\Event\RequestErrorEvent`
+
+   The event is dispatched after creating the HTTP response, while API endpoint has been requested and an exception occurred.
+   **Provides access to the HTTP response.**
+
+#### Register event listener
+
+Example:
+
+```yaml
+request_error_listener:
+    class: RequestErrorListener
+    tags:
+        - { name: kernel.event_listener, event: artur_doruch_simple_rest.request_error.pre_create_response, method: onError }
+```
+
+See the Symfony [Events and Event Listeners](https://symfony.com/doc/3.4/event_dispatcher.html) documentation for details. 
 
 ## Endpoint response
 
-The content type of the endpoint response body is always `application/json`.
+To create endpoint response use the `ArturDoruch\SimpleRestBundle\RestTrait::createResponse()` method.
+By default, the response has the `Content-Type: application/json` header set. 
 
 #### Endpoint request error
 
@@ -104,5 +141,5 @@ The response body for an endpoint request error contains:
   - Content body parameters:
      - `status` (string) HTTP status code.
      - `type` (string) Type of the error.
-     - `message` (string) Error mesage.
-     - `details` (array) Error datials.
+     - `message` (string) Error message.
+     - `details` (array) Error details.
