@@ -7,7 +7,7 @@
     <services>
         <service id="arturdoruch_simple_rest.exception_listener" class="ArturDoruch\SimpleRestBundle\EventListener\ExceptionListener" public="false">
             <argument>%arturdoruch_simple_rest.api_paths%</argument>
-            <argument type="service" id="@event_dispatcher" />
+            <argument type="service" id="event_dispatcher" />
             <argument>%kernel.debug%</argument>
             <tag name="kernel.event_listener" event="kernel.exception" method="onKernelException" />
         </service>
