@@ -6,7 +6,7 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
 
 /**
- * This is a wrapper for JMS\Serializer.
+ * A wrapper for JMS\Serializer.
  *
  * @author Artur Doruch <arturdoruch@interia.pl>
  */
@@ -30,6 +30,10 @@ class SerializerAdapter
      */
     public static function getSerializer(): Serializer
     {
+        if (!self::$serializer) {
+            throw new \LogicException('To serialize or normalize data install the "jms/serializer-bundle" composer package.');
+        }
+
         return self::$serializer;
     }
 
@@ -48,7 +52,7 @@ class SerializerAdapter
             $context = self::createSerializationContext();
         }
 
-        return self::$serializer->serialize($data, $format, $context);
+        return self::getSerializer()->serialize($data, $format, $context);
     }
 
     /**
@@ -65,7 +69,7 @@ class SerializerAdapter
             $context = self::createSerializationContext();
         }
 
-        return self::$serializer->toArray($object, $context);
+        return self::getSerializer()->toArray($object, $context);
     }
 
 

@@ -12,7 +12,6 @@
     ],
     "require": {
         "php": ">=7.0",
-        "jms/serializer-bundle": "^3.5",
         "symfony/config": "^3.0",
         "symfony/dependency-injection": "^3.0",
         "symfony/event-dispatcher": "^3.0",
@@ -21,6 +20,7 @@
         "symfony/http-kernel": "^3.0"
     },
     "suggest": {
+        "jms/serializer-bundle": "For serializing and normalizing HTTP response data.",
         "symfony/translation": "For translating API error messages."
     },
     "autoload": {
