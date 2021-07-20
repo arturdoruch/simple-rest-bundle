@@ -2,14 +2,13 @@
 
 namespace ArturDoruch\SimpleRestBundle\Event;
 
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Artur Doruch <arturdoruch@interia.pl>
  */
-class RequestErrorEvent extends Event
+class RequestErrorEvent extends AbstractEvent
 {
     /**
      * @var \Exception

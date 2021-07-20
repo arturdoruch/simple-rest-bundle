@@ -10,8 +10,22 @@ composer require arturdoruch/simple-rest-bundle
 
 Register bundle in `Kernel` class of your application.
  
+In Symfony 3
 ```php
-new ArturDoruch\SimpleRestBundle\ArturDoruchSimpleRestBundle(),
+// app/AppKernel.php
+public function registerBundles()
+{
+    $bundles = [
+        new ArturDoruch\SimpleRestBundle\ArturDoruchSimpleRestBundle(),
+    ];
+```
+In Symfony >= 4
+```php
+// config/bundles.php
+return [
+    // Other bundles
+    ArturDoruch\SimpleRestBundle\ArturDoruchSimpleRestBundle::class => ['all' => true],
+];
 ```
 
 ### Suggestions
@@ -24,8 +38,6 @@ new ArturDoruch\SimpleRestBundle\ArturDoruchSimpleRestBundle(),
 Bundle configuration. Available options:
  
 ```yaml
-# app/config/config.yml
-
 artur_doruch_simple_rest:
     # Required. API endpoint paths as regexp. 
     api_paths:

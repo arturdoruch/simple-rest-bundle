@@ -10,6 +10,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -35,7 +36,6 @@ class ExceptionListener
      */
     private $kernelDebug;
 
-
     public function __construct(array $apiPaths, EventDispatcherInterface $dispatcher, bool $kernelDebug)
     {
         $this->apiPaths = $apiPaths;
@@ -46,18 +46,18 @@ class ExceptionListener
     /**
      * Prepares HTTP response based on exception properties.
      *
-     * @param GetResponseForExceptionEvent $event
+     * @param ExceptionEvent|GetResponseForExceptionEvent $event
      */
-    public function onKernelException(GetResponseForExceptionEvent $event)
+    public function onKernelException($event)
     {
         if (!$this->isApiPath($event->getRequest())) {
             return;
         }
 
-        $exception = $event->getException();
+        $exception = $event instanceof GetResponseForExceptionEvent ? $event->getException() : $event->getThrowable();
 
         $requestErrorEvent = new RequestErrorEvent($exception, $event->getRequest());
-        $this->dispatcher->dispatch(RequestErrorEvents::PRE_CREATE_RESPONSE, $requestErrorEvent);
+        $this->dispatchEvent(RequestErrorEvents::PRE_CREATE_RESPONSE, $requestErrorEvent);
 
         $statusCode = (int) $this->getStatusCode($exception);
 
@@ -103,7 +103,7 @@ class ExceptionListener
         $event->setResponse($response);
 
         $requestErrorEvent->setResponse(clone $response);
-        $this->dispatcher->dispatch(RequestErrorEvents::POST_CREATE_RESPONSE, $requestErrorEvent);
+        $this->dispatchEvent(RequestErrorEvents::POST_CREATE_RESPONSE, $requestErrorEvent);
     }
 
 
@@ -125,6 +125,16 @@ class ExceptionListener
         }
 
         return false;
+    }
+
+
+    private function dispatchEvent(string $eventName, RequestErrorEvent $event)
+    {
+        if ($this->dispatcher instanceof \Symfony\Contracts\EventDispatcher\EventDispatcherInterface) {
+            $this->dispatcher->dispatch($event, $eventName);
+        } else {
+            $this->dispatcher->dispatch($eventName, $event);
+        }
     }
 }
  

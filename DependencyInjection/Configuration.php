@@ -12,12 +12,13 @@ class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('artur_doruch_simple_rest');
+        $treeBuilder = new TreeBuilder($name = 'artur_doruch_simple_rest');
+        $rootNode = method_exists($treeBuilder, 'getRootNode') ? $treeBuilder->getRootNode() : $treeBuilder->root($name);
 
         $rootNode
             ->children()
                 ->arrayNode('api_paths')
+                    ->info('API endpoint paths as regexp.')
                     ->isRequired()
                     ->prototype('scalar')->end()
                 ->end()
